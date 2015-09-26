@@ -1,4 +1,4 @@
-package demo.akozlowski.com.contacts;
+package com.demo.contacts;
 
 import android.app.Application;
 import android.test.ApplicationTestCase;

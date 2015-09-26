@@ -2,4 +2,6 @@
     <string name="app_name">Contacts</string>
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
+    <string name="search_btn">Search</string>
+    <string name="search_field">type valid number</string>
 </resources>
