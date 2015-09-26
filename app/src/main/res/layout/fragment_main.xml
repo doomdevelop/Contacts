@@ -38,47 +38,93 @@
 
 
     <RelativeLayout
+        android:id="@+id/details"
+        android:visibility="gone"
+        android:paddingTop="30dp"
+        android:layout_below="@+id/search_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
         <ImageView
-        android:id="@+id/contact_image"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+            android:id="@+id/contact_image"
+            android:layout_width="150dp"
+            android:layout_height="150dp"
             android:layout_alignParentLeft="true"
             android:layout_alignParentTop="true"
-        />
+            android:scaleType="fitXY" />
+
         <TextView
-            android:layout_toRightOf="@+id/contact_image"
+            android:paddingLeft="10dp"
             android:id="@+id/contact_display_name"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:layout_toRightOf="@+id/contact_image" />
+
         <TextView
-            android:layout_toRightOf="@+id/contact_image"
-            android:layout_below="@+id/contact_display_name"
+            android:paddingLeft="10dp"
+            android:textSize="16sp"
             android:id="@+id/contact_phone_number"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/contact_display_name"
+            android:layout_toRightOf="@+id/contact_image" />
         <TextView
-            android:layout_below="@+id/contact_phone_number"
+            android:id="@+id/contact_city_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/city"
+            android:paddingRight="15dp"
+            android:layout_alignParentLeft="true"
+            android:layout_below="@+id/contact_image" />
+        <TextView
             android:id="@+id/contact_city"
+            android:layout_toLeftOf="@+id/contact_city_name"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            />
         <TextView
-            android:layout_below="@+id/contact_city"
+            android:id="@+id/contact_post_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingRight="15dp"
+            android:text="@string/post"
+            android:layout_alignParentLeft="true"
+            android:layout_below="@+id/contact_city_name" />
+        <TextView
             android:id="@+id/contact_post"
+            android:layout_toLeftOf="@+id/contact_post_name"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/contact_city" />
         <TextView
-            android:layout_below="@+id/contact_post"
+            android:id="@+id/contact_street_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingRight="15dp"
+            android:text="@string/street"
+            android:layout_alignParentLeft="true"
+            android:layout_below="@+id/contact_post" />
+        <TextView
             android:id="@+id/contact_street"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:layout_toLeftOf="@+id/contact_street_name"
+            android:layout_below="@+id/contact_post_name" />
+        <TextView
+            android:id="@+id/contact_country_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingRight="15dp"
+            android:text="@string/country"
+            android:layout_alignParentLeft="true"
+            android:layout_below="@+id/contact_street_name" />
         <TextView
             android:id="@+id/contact_country"
-            android:layout_below="@+id/contact_street"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:layout_toLeftOf="@+id/contact_country_name"
+            android:layout_below="@+id/contact_street" />
 
     </RelativeLayout>
 

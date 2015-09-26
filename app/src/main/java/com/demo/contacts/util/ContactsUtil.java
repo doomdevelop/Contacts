@@ -53,38 +53,15 @@ public class ContactsUtil implements LoaderManager.LoaderCallbacks<Cursor>{
                     StructuredPostal.COUNTRY,
                     StructuredPostal.CITY,
                     StructuredPostal.STREET,
-//                    Data.DATA1,
-//                    Data.DATA2,
-//                    Data.DATA3,
-//                    Data.DATA4,
-//                    Data.DATA5,
-//                    Data.DATA6,
-//                    Data.DATA7,
-//                    Data.DATA8,
-//                    Data.DATA9,
-//                    Data.DATA10,
-//                    Data.DATA11,
-//                    Data.DATA12,
-//                    Data.DATA13,
-//                    Data.DATA14,
-//                    Data.DATA15,
+
                     ContactsContract.Contacts._ID,
-//                    ContactsContract.Contacts.LOOKUP_KEY,
-//                    Build.VERSION.SDK_INT
-//                            >= Build.VERSION_CODES.HONEYCOMB ?
-//                            ContactsContract.Contacts.DISPLAY_NAME_PRIMARY :
-//                            ContactsContract.Contacts.DISPLAY_NAME
+
 
             };
 
     private static final String[] PROJECTION_MIMETYPE =
             {
-//                    ContactsContract.Data.CONTACT_ID,
-//                    ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME,
-//                    Email._ID,
-//                    Email.ADDRESS,
-//                    Email.TYPE,
-//                    Email.LABEL,
+
                     StructuredPostal.POSTCODE,
                     StructuredPostal.COUNTRY,
                     StructuredPostal.CITY,
@@ -169,25 +146,24 @@ public class ContactsUtil implements LoaderManager.LoaderCallbacks<Cursor>{
             case PHONE_NUMBER_QUERY_ID:
                 if (cur.getCount() > 0) {
                     while (cur.moveToNext()) {
-                        String id = cur.getString(cur.getColumnIndex(ContactsContract.Contacts._ID));
                         String name = cur.getString(cur.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME_PRIMARY));
-                        String namePhone = cur.getString(cur.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
                         String thumbUriStr = cur.getString(cur.getColumnIndex(ContactsContract.Data.PHOTO_URI));
                         Uri thumbUri = thumbUri = Uri.parse(thumbUriStr);
                         String phoneNumber = cur.getString(cur.getColumnIndex( ContactsContract.CommonDataKinds.Phone.NUMBER));
-                        String street = cur.getString(cur.getColumnIndex(StructuredPostal.STREET));
-                        String country = cur.getString(cur.getColumnIndex(StructuredPostal.COUNTRY));
-                        String postcode = cur.getString(cur.getColumnIndex(StructuredPostal.POSTCODE));
-                        String email =  cur.getString(cur.getColumnIndex(Email.ADDRESS));
+
                         String contactID =  cur.getString(cur.getColumnIndex(ContactsContract.Data.CONTACT_ID));
                         this.mContactID = contactID;
                         contact = new Contact();
                         contact.setDisplayName(name);
                         contact.setThumbUri(thumbUri);
                         contact.setPhoneNumber(phoneNumber);
-                        mCallback.onFinish(contact, ContactsLoaderListener.LOADED_PART.BASE);
-                        searchForDetails();
-                        Log.d(TAG," found the contact: "+name+" namePhone: "+namePhone+" contactID: "+contactID+" phoneNumber "+phoneNumber);
+                        mCallback.onResult(contact, ContactsLoaderListener.LOADED_PART.BASE);
+                        if(mContactID != null) {
+                            searchForDetails();
+                        }else{
+                            mCallback.onFinish();
+                        }
+//                        Log.d(TAG," found the contact: "+name+" namePhone: "+namePhone+" contactID: "+contactID+" phoneNumber "+phoneNumber);
                     }
                 }else{
                     Log.e(TAG," NO contact ! ");
@@ -196,30 +172,25 @@ public class ContactsUtil implements LoaderManager.LoaderCallbacks<Cursor>{
             case MIMETYPE_QUERY_ID:
                 if (cur.getCount() > 0) {
                     while (cur.moveToNext()) {
-//                        String id = cur.getString(cur.getColumnIndex(ContactsContract.Contacts._ID));
-//                        String name = cur.getString(cur.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME_PRIMARY));
-//                        String namePhone = cur.getString(cur.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
-//                        String thumbUriStr = cur.getString(cur.getColumnIndex(ContactsContract.Data.PHOTO_URI));
-//                        Uri thumbUri = thumbUri = Uri.parse(thumbUriStr);
+
                         String city = cur.getString(cur.getColumnIndex(StructuredPostal.CITY));
                         String street = cur.getString(cur.getColumnIndex(StructuredPostal.STREET));
                         String country = cur.getString(cur.getColumnIndex(StructuredPostal.COUNTRY));
                         String postcode = cur.getString(cur.getColumnIndex(StructuredPostal.POSTCODE));
-//                        String email =  cur.getString(cur.getColumnIndex(Email.ADDRESS));
-//                        String contactID =  cur.getString(cur.getColumnIndex(ContactsContract.Data.CONTACT_ID));
-//                        this.mContactID = contactID;
                         if(contact != null){
                             contact.setCity(city);
                             contact.setStreet(street);
                             contact.setCountry(country);
                             contact.setPostcode(postcode);
-                            mCallback.onFinish(contact, ContactsLoaderListener.LOADED_PART.DETAILS);
+                            mCallback.onResult(contact, ContactsLoaderListener.LOADED_PART.DETAILS);
+
                         }
                         Log.d(TAG," found the country: "+country+" email: ");
                     }
                 }else{
                     Log.e(TAG," NO contact ! ");
                 }
+                mCallback.onFinish();
 
         }
 
@@ -232,6 +203,6 @@ public class ContactsUtil implements LoaderManager.LoaderCallbacks<Cursor>{
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
-
+        mCallback.onFinish();
     }
 }

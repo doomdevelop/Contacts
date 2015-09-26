@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.demo.contacts.R;
@@ -41,9 +42,13 @@ public class MainActivityFragment extends Fragment implements ContactsLoaderList
     TextView streetTV;
     @Bind(R.id.search_progress)
     ProgressBar progress;
-
+    @Bind(R.id.details)
+    RelativeLayout details;
     @Bind(R.id.contact_country)
     TextView countryTV;
+
+    @Bind(R.id.search_btn)
+    ImageView searchBtn;
 
     public MainActivityFragment() {
     }
@@ -76,7 +81,8 @@ public class MainActivityFragment extends Fragment implements ContactsLoaderList
     public void startSearch(){
 
         String searchStr = searchField.getText().toString();
-        if(searchStr != null && searchStr.length()>0) {
+        if(searchStr != null && searchStr.length()>0){
+            searchBtn.setEnabled(false);
             progress.setVisibility(View.VISIBLE);
 //            ContactsUtil.getInstance().search(searchStr, this);
             ContactsUtil.getInstance().search(searchStr,this);
@@ -85,10 +91,12 @@ public class MainActivityFragment extends Fragment implements ContactsLoaderList
     }
 
     @Override
-    public void onFinish(Contact contact,LOADED_PART loaded_part) {
+    public void onResult(Contact contact, LOADED_PART loaded_part) {
+
         switch(loaded_part){
             case BASE:
                 //name,image,phone
+                details.setVisibility(View.VISIBLE);
                 if(contact.getThumbUri() != null) {
                     Picasso.with(getActivity()).load(contact.getThumbUri()).into(imageView);
                 }
@@ -103,9 +111,13 @@ public class MainActivityFragment extends Fragment implements ContactsLoaderList
                     countryTV.setText(contact.getCountry());
 
                 }
-                progress.setVisibility(View.GONE);
                 break;
         }
+    }
 
+    @Override
+    public void onFinish() {
+        searchBtn.setEnabled(false);
+        progress.setVisibility(View.GONE);
     }
 }

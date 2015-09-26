@@ -4,4 +4,8 @@
     <string name="action_settings">Settings</string>
     <string name="search_btn">Search</string>
     <string name="search_field">type valid number</string>
+    <string name="city">city:</string>
+    <string name="post">post:</string>
+    <string name="street">street</string>
+    <string name="country">country</string>
 </resources>
