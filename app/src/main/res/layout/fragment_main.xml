@@ -17,6 +17,7 @@
         android:orientation="horizontal">
 
         <EditText
+            android:id="@+id/search_field"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="4"
@@ -35,14 +36,51 @@
             android:text="@string/search_btn" />
     </LinearLayout>
 
+
     <RelativeLayout
         android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <ImageView
+        android:id="@+id/contact_image"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/search_layout"
-        >
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentTop="true"
+        />
+        <TextView
+            android:layout_toRightOf="@+id/contact_image"
+            android:id="@+id/contact_display_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+        <TextView
+            android:layout_toRightOf="@+id/contact_image"
+            android:layout_below="@+id/contact_display_name"
+            android:id="@+id/contact_phone_number"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+        <TextView
+            android:layout_below="@+id/contact_phone_number"
+            android:id="@+id/contact_city"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+        <TextView
+            android:layout_below="@+id/contact_city"
+            android:id="@+id/contact_post"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+        <TextView
+            android:layout_below="@+id/contact_post"
+            android:id="@+id/contact_street"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+        <TextView
+            android:id="@+id/contact_country"
+            android:layout_below="@+id/contact_street"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
 
     </RelativeLayout>
-
 
     <ProgressBar
         android:id="@+id/search_progress"
