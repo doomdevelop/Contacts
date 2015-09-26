@@ -15,35 +15,36 @@ import android.util.Log;
 import com.demo.contacts.domain.Contact;
 import com.demo.contacts.ui.ContactsLoaderListener;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Created by and on 26.09.15.
  */
-public class ContactsUtil implements LoaderManager.LoaderCallbacks<Cursor>{
+public class ContactsUtil implements LoaderManager.LoaderCallbacks<Cursor> {
 
     private static ContactsUtil INSTANCE;
     private Activity mActivity;
     private String mSearchString;
     private static final String TAG = ContactsUtil.class.getSimpleName();
 
-    private String[] mSelectionArgs = { mSearchString };
+    private String[] mSelectionArgs = {mSearchString};
     private static final String SELECTION = ContactsContract.CommonDataKinds.Phone.NUMBER + " = ?";
 
     private static final String SELECTION_MIMETYPE = ContactsContract.Data.CONTACT_ID + " = ? AND " + ContactsContract.Data.MIMETYPE + " = ?";
     private String mLookupKey;
-    private final int PHONE_NUMBER_QUERY_ID = 0;
+    private final int PHONE_NUMBER_QUERY_ID = 2;
     private final int MIMETYPE_QUERY_ID = 1;
 
-    private String mContactID = null;
     private Contact contact;
     private ContactsLoaderListener mCallback;
+
 
     private static final String[] PROJECTION =
             {
                     ContactsContract.Data.CONTACT_ID,
                     ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME,
                     ContactsContract.CommonDataKinds.Phone.NUMBER,
-//                    ContactsContract.PhoneLookup.NUMBER,
-//                    ContactsContract.PhoneLookup.DISPLAY_NAME,
                     ContactsContract.Data.PHOTO_URI,
                     Email._ID,
                     Email.ADDRESS,
@@ -61,18 +62,17 @@ public class ContactsUtil implements LoaderManager.LoaderCallbacks<Cursor>{
 
     private static final String[] PROJECTION_MIMETYPE =
             {
-
                     StructuredPostal.POSTCODE,
                     StructuredPostal.COUNTRY,
                     StructuredPostal.CITY,
                     StructuredPostal.STREET,
-
                     ContactsContract.Contacts._ID,
             };
 
-    private ContactsUtil(Activity context){
+    private ContactsUtil(Activity context) {
         this.mActivity = context;
     }
+
     public static ContactsUtil getInstance() {
         if (INSTANCE == null)
             throw (new IllegalStateException("BrushingStateManager not initialized"));
@@ -87,8 +87,21 @@ public class ContactsUtil implements LoaderManager.LoaderCallbacks<Cursor>{
         return INSTANCE;
     }
 
-    public void search(String phoneNumber,ContactsLoaderListener callback) {
-        Log.d(TAG,"search().. "+phoneNumber);
+    /**
+     *
+     * Search for contact by given phone number.
+     * The search run in background , and will notify with callback
+     *
+     * If callback has value null , IllegalStateException will be thrown
+     * @param phoneNumber
+     * @param callback callback will call implementer on finish loading
+     */
+    public void search(String phoneNumber, ContactsLoaderListener callback) {
+        if(callback == null){
+            throw (new IllegalStateException("ContactsLoaderListener can not be null !"));
+        }
+        Log.d(TAG, "search().. " + phoneNumber);
+        this.contact = null;
         this.mSearchString = phoneNumber;
         this.mCallback = callback;
         mActivity.getLoaderManager().initLoader(PHONE_NUMBER_QUERY_ID, null, this);
@@ -96,16 +109,12 @@ public class ContactsUtil implements LoaderManager.LoaderCallbacks<Cursor>{
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        Log.d(TAG,"onCreateLoader().. ");
+        Log.d(TAG, "onCreateLoader().. ");
         CursorLoader mLoader = null;
         switch (id) {
             case PHONE_NUMBER_QUERY_ID:
-                // Assigns the selection parameter
-//                mSelectionArgs[0] = mLookupKey;
-                // Starts the query
                 String[] param = new String[]{mSearchString};
-                Log.d(TAG,"onCreateLoader().. "+mSelectionArgs[0]);
-//                Uri uri = Uri.withAppendedPath(ContactsContract.PhoneLookup.CONTENT_FILTER_URI, Uri.encode(phoneNumber));
+                Log.d(TAG, "onCreateLoader().. " + mSelectionArgs[0]);
                 mLoader = new CursorLoader(
                         mActivity,
                         ContactsContract.Data.CONTENT_URI,
@@ -116,68 +125,106 @@ public class ContactsUtil implements LoaderManager.LoaderCallbacks<Cursor>{
                 );
                 break;
             case MIMETYPE_QUERY_ID:
-                if(this.mContactID == null){
-                    break;
+                if (this.contact != null && this.contact.getmContactID() != null) {
+                    String[] param2 = new String[]{this.contact.getmContactID(), ContactsContract.CommonDataKinds.StructuredPostal.CONTENT_ITEM_TYPE};
+                    Log.d(TAG, "mContactID:  " + this.contact.getmContactID());
+                    mLoader = new CursorLoader(
+                            mActivity,
+                            ContactsContract.Data.CONTENT_URI,
+                            PROJECTION_MIMETYPE,
+                            SELECTION_MIMETYPE,
+                            param2,
+                            null
+                    );
                 }
-                // Assigns the selection parameter
-//                mSelectionArgs[0] = mLookupKey;
-                // Starts the query
-                String[] param2 = new String[]{mContactID,ContactsContract.CommonDataKinds.StructuredPostal.CONTENT_ITEM_TYPE};
-                Log.d(TAG,"mContactID:  "+mContactID);
-//                Uri uri = Uri.withAppendedPath(ContactsContract.PhoneLookup.CONTENT_FILTER_URI, Uri.encode(phoneNumber));
-                mLoader = new CursorLoader(
-                        mActivity,
-                        ContactsContract.Data.CONTENT_URI,
-                        PROJECTION_MIMETYPE,
-                        SELECTION_MIMETYPE,
-                        param2,
-                        null
-                );
                 break;
 
         }
         return mLoader;
     }
 
+    /**
+     *If several contacts with the same number exist - return the one that has a thumbnail, otherwise - null.
+     * @param c
+     * @return Contact with thumbnail or null
+     */
+    private Contact iterateMoreContacts(Cursor c) {
+        List<Contact> contactList = new ArrayList<>();
+        Contact contact;
+        if (c.moveToFirst()) {
+            do {
+                contact = createContact(c);
+                if(contact.getThumbUri() != null) {
+                    contactList.add(contact);
+                }
+            }
+            while (c.moveToNext());
+        }
+        if(contactList.isEmpty()){
+            return null;
+        }
+        return contactList.get(0);
+    }
+
+    /**
+     * Creating contact from cursor
+     * @param cur
+     * @return Contact created from cursor
+     */
+    private Contact createContact(Cursor cur) {
+        String name = cur.getString(cur.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME_PRIMARY));
+        String thumbUriStr = cur.getString(cur.getColumnIndex(ContactsContract.Data.PHOTO_URI));
+        Uri thumbUri = null;
+        if(thumbUriStr != null) {
+            thumbUri = Uri.parse(thumbUriStr);
+        }
+        String phoneNumber = cur.getString(cur.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
+
+        String contactID = cur.getString(cur.getColumnIndex(ContactsContract.Data.CONTACT_ID));
+
+        Contact contact = new Contact();
+        contact.setmContactID(contactID);
+        contact.setDisplayName(name);
+        contact.setThumbUri(thumbUri);
+        contact.setPhoneNumber(phoneNumber);
+        return contact;
+    }
+
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor cur) {
-        Log.d(TAG,"onLoadFinished().. ");
+        Log.d(TAG, "onLoadFinished().. ");
         switch (loader.getId()) {
             case PHONE_NUMBER_QUERY_ID:
                 if (cur.getCount() > 0) {
-                    while (cur.moveToNext()) {
-                        String name = cur.getString(cur.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME_PRIMARY));
-                        String thumbUriStr = cur.getString(cur.getColumnIndex(ContactsContract.Data.PHOTO_URI));
-                        Uri thumbUri = thumbUri = Uri.parse(thumbUriStr);
-                        String phoneNumber = cur.getString(cur.getColumnIndex( ContactsContract.CommonDataKinds.Phone.NUMBER));
-
-                        String contactID =  cur.getString(cur.getColumnIndex(ContactsContract.Data.CONTACT_ID));
-                        this.mContactID = contactID;
-                        contact = new Contact();
-                        contact.setDisplayName(name);
-                        contact.setThumbUri(thumbUri);
-                        contact.setPhoneNumber(phoneNumber);
-                        mCallback.onResult(contact, ContactsLoaderListener.LOADED_PART.BASE);
-                        if(mContactID != null) {
-                            searchForDetails();
-                        }else{
-                            mCallback.onFinish();
+                    if (cur.moveToFirst()) {
+                        if (cur.getCount() > 1) {
+                            this.contact = iterateMoreContacts(cur);
+                        } else {
+                            this.contact = createContact(cur);
                         }
-//                        Log.d(TAG," found the contact: "+name+" namePhone: "+namePhone+" contactID: "+contactID+" phoneNumber "+phoneNumber);
                     }
-                }else{
-                    Log.e(TAG," NO contact ! ");
+
+                    if (this.contact.getmContactID() != null) {
+                        mCallback.onResult(contact, ContactsLoaderListener.LOADED_PART.BASE);
+                        searchForDetails();
+                    } else {
+                        mCallback.onFinish();
+                    }
+                } else {
+                    mCallback.onFinish();
+                    Log.e(TAG, " NO contact ! ");
                 }
+
                 break;
             case MIMETYPE_QUERY_ID:
                 if (cur.getCount() > 0) {
-                    while (cur.moveToNext()) {
+                    if (cur.moveToFirst()) {
 
                         String city = cur.getString(cur.getColumnIndex(StructuredPostal.CITY));
                         String street = cur.getString(cur.getColumnIndex(StructuredPostal.STREET));
                         String country = cur.getString(cur.getColumnIndex(StructuredPostal.COUNTRY));
                         String postcode = cur.getString(cur.getColumnIndex(StructuredPostal.POSTCODE));
-                        if(contact != null){
+                        if (contact != null) {
                             contact.setCity(city);
                             contact.setStreet(street);
                             contact.setCountry(country);
@@ -185,18 +232,24 @@ public class ContactsUtil implements LoaderManager.LoaderCallbacks<Cursor>{
                             mCallback.onResult(contact, ContactsLoaderListener.LOADED_PART.DETAILS);
 
                         }
-                        Log.d(TAG," found the country: "+country+" email: ");
+
+                        Log.d(TAG, " found the country: " + country + " email: ");
                     }
-                }else{
-                    Log.e(TAG," NO contact ! ");
+                } else {
+                    Log.e(TAG, " NO contact ! ");
                 }
                 mCallback.onFinish();
-
         }
-
+        //work around onCreateLoader was  called only by first search
+        mActivity.getLoaderManager().destroyLoader(loader.getId());
     }
 
-    private void searchForDetails(){
+    public void destroyLoader() {
+        mActivity.getLoaderManager().destroyLoader(PHONE_NUMBER_QUERY_ID);
+        mActivity.getLoaderManager().destroyLoader(MIMETYPE_QUERY_ID);
+    }
+
+    private void searchForDetails() {
         mActivity.getLoaderManager().initLoader(MIMETYPE_QUERY_ID, null, this);
     }
 

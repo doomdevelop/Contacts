@@ -89,4 +89,14 @@ public class Contact {
     private String city;
     private String postcode;
     private Uri  thumbUri;
+
+    public String getmContactID() {
+        return mContactID;
+    }
+
+    public void setmContactID(String mContactID) {
+        this.mContactID = mContactID;
+    }
+
+    private String  mContactID;
 }

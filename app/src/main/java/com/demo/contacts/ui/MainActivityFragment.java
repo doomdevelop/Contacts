@@ -1,15 +1,18 @@
 package com.demo.contacts.ui;
 
+import android.content.Context;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.demo.contacts.R;
 import com.demo.contacts.domain.Contact;
@@ -77,22 +80,40 @@ public class MainActivityFragment extends Fragment implements ContactsLoaderList
         super.onResume();
     }
 
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        ContactsUtil.getInstance().destroyLoader();
+    }
+
     @OnClick({ R.id.search_btn})
     public void startSearch(){
-
+        hideKeyboard();
         String searchStr = searchField.getText().toString();
         if(searchStr != null && searchStr.length()>0){
+            cleanContactViews();
             searchBtn.setEnabled(false);
             progress.setVisibility(View.VISIBLE);
-//            ContactsUtil.getInstance().search(searchStr, this);
             ContactsUtil.getInstance().search(searchStr,this);
+        }else{
+            Toast.makeText(getActivity(),"Entry not valid !",Toast.LENGTH_SHORT);
         }
 
     }
 
+    /**
+     * Contact must not be null and contain phone number
+     * @param contact
+     * @return true if contact is not null and contain phone number
+     */
+    private boolean isContactValid(Contact contact){
+        return contact != null && contact.getPhoneNumber() != null;
+    }
     @Override
     public void onResult(Contact contact, LOADED_PART loaded_part) {
-
+        if(!isContactValid(contact)){
+            return;
+        }
         switch(loaded_part){
             case BASE:
                 //name,image,phone
@@ -104,20 +125,33 @@ public class MainActivityFragment extends Fragment implements ContactsLoaderList
                 displyNameTV.setText(contact.getDisplayName());
                 break;
             case DETAILS:
-                if(contact != null){
                     cityTV.setText(contact.getCity());
                     streetTV.setText(contact.getStreet());
                     postTV.setText(contact.getPostcode());
                     countryTV.setText(contact.getCountry());
 
-                }
                 break;
         }
+    }
+    private void cleanContactViews(){
+        phoneNumberTV.setText("");
+        displyNameTV.setText("");
+        cityTV.setText("");
+        streetTV.setText("");
+        postTV.setText("");
+        countryTV.setText("");
+        this.details.setVisibility(View.GONE);
     }
 
     @Override
     public void onFinish() {
-        searchBtn.setEnabled(false);
+        searchBtn.setEnabled(true);
         progress.setVisibility(View.GONE);
+
+    }
+    private void hideKeyboard() {
+        InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+        imm.hideSoftInputFromWindow(searchField.getWindowToken(), 0);
+        getView().invalidate();
     }
 }

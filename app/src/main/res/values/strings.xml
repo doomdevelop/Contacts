@@ -6,6 +6,6 @@
     <string name="search_field">type valid number</string>
     <string name="city">city:</string>
     <string name="post">post:</string>
-    <string name="street">street</string>
-    <string name="country">country</string>
+    <string name="street">street: </string>
+    <string name="country">country: </string>
 </resources>
