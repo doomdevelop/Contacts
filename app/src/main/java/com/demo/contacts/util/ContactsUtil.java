@@ -114,7 +114,6 @@ public class ContactsUtil implements LoaderManager.LoaderCallbacks<Cursor> {
         switch (id) {
             case PHONE_NUMBER_QUERY_ID:
                 String[] param = new String[]{mSearchString};
-                Log.d(TAG, "onCreateLoader().. " + mSelectionArgs[0]);
                 mLoader = new CursorLoader(
                         mActivity,
                         ContactsContract.Data.CONTENT_URI,
