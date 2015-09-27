@@ -28,11 +28,9 @@ public class ContactsUtil implements LoaderManager.LoaderCallbacks<Cursor> {
     private String mSearchString;
     private static final String TAG = ContactsUtil.class.getSimpleName();
 
-    private String[] mSelectionArgs = {mSearchString};
     private static final String SELECTION = ContactsContract.CommonDataKinds.Phone.NUMBER + " = ?";
 
     private static final String SELECTION_MIMETYPE = ContactsContract.Data.CONTACT_ID + " = ? AND " + ContactsContract.Data.MIMETYPE + " = ?";
-    private String mLookupKey;
     private final int PHONE_NUMBER_QUERY_ID = 2;
     private final int MIMETYPE_QUERY_ID = 1;
 
@@ -101,15 +99,12 @@ public class ContactsUtil implements LoaderManager.LoaderCallbacks<Cursor> {
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         Log.d(TAG, "onCreateLoader().. ");
         CursorLoader mLoader = null;
-        Uri lookupUri = Uri.withAppendedPath(ContactsContract.CommonDataKinds.Phone.CONTENT_FILTER_URI,
-                Uri.encode(mSearchString));
         switch (id) {
             case PHONE_NUMBER_QUERY_ID:
-                String[] param = new String[]{mSearchString};
+                Uri lookupUri = Uri.withAppendedPath(ContactsContract.CommonDataKinds.Phone.CONTENT_FILTER_URI,Uri.encode(mSearchString));
                 mLoader = new CursorLoader(
                         mActivity,
                         lookupUri,
-//                        ContactsContract.Data.CONTENT_URI,
                         PROJECTION,
                         null,
                         null,
@@ -130,7 +125,6 @@ public class ContactsUtil implements LoaderManager.LoaderCallbacks<Cursor> {
                     );
                 }
                 break;
-
         }
         return mLoader;
     }
@@ -211,7 +205,6 @@ public class ContactsUtil implements LoaderManager.LoaderCallbacks<Cursor> {
                     mCallback.onFinish();
                     Log.e(TAG, " NO contact ! ");
                 }
-
                 break;
             case MIMETYPE_QUERY_ID:
                 if (cur.getCount() > 0) {
