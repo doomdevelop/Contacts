@@ -1,8 +1,8 @@
 package com.demo.contacts.ui;
 
 import android.content.Context;
-import android.support.v4.app.Fragment;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -28,9 +28,9 @@ import butterknife.OnClick;
 /**
  * A placeholder fragment containing a simple view.
  */
-public class MainActivityFragment extends Fragment implements ContactsLoaderListener{
+public class MainActivityFragment extends Fragment implements ContactsLoaderListener {
     @Bind(R.id.search_field)
-     EditText searchField;
+    EditText searchField;
     @Bind(R.id.contact_city)
     TextView cityTV;
     @Bind(R.id.contact_display_name)
@@ -86,60 +86,65 @@ public class MainActivityFragment extends Fragment implements ContactsLoaderList
         ContactsUtil.getInstance().destroyLoader();
     }
 
-    @OnClick({ R.id.search_btn})
-    public void startSearch(){
+    @OnClick({R.id.search_btn})
+    public void startSearch() {
         hideKeyboard();
         String searchStr = searchField.getText().toString();
-        if(searchStr != null && searchStr.length()>0){
+        if (searchStr != null && searchStr.length() > 0) {
             cleanContactViews();
             searchBtn.setEnabled(false);
             progress.setVisibility(View.VISIBLE);
-            ContactsUtil.getInstance().search(searchStr,this);
-        }else{
-            Toast.makeText(getActivity(),"Entry not valid !",Toast.LENGTH_SHORT);
+            ContactsUtil.getInstance().search(searchStr, this);
+        } else {
+            Toast.makeText(getActivity(), "Entry not valid !", Toast.LENGTH_SHORT);
         }
 
     }
 
     /**
      * Contact must not be null and contain phone number
+     *
      * @param contact
      * @return true if contact is not null and contain phone number
      */
-    private boolean isContactValid(Contact contact){
-        return contact != null && contact.getPhoneNumber() != null;
+    private boolean isContactValid(Contact contact) {
+        return contact != null && contact.getmContactID() != null;
     }
+
     @Override
     public void onResult(Contact contact, LOADED_PART loaded_part) {
-        if(!isContactValid(contact)){
+        if (!isContactValid(contact)) {
             return;
         }
-        switch(loaded_part){
+        switch (loaded_part) {
             case BASE:
                 //name,image,phone
                 details.setVisibility(View.VISIBLE);
-                if(contact.getThumbUri() != null) {
+                if (contact.getThumbUri() != null) {
                     Picasso.with(getActivity()).load(contact.getThumbUri()).into(imageView);
                 }
                 phoneNumberTV.setText(contact.getPhoneNumber());
                 displyNameTV.setText(contact.getDisplayName());
                 break;
             case DETAILS:
-                    cityTV.setText(contact.getCity());
-                    streetTV.setText(contact.getStreet());
-                    postTV.setText(contact.getPostcode());
-                    countryTV.setText(contact.getCountry());
+
+                cityTV.setText(contact.getCity());
+                streetTV.setText(contact.getStreet());
+                postTV.setText(contact.getPostcode());
+                countryTV.setText(contact.getCountry());
 
                 break;
         }
     }
-    private void cleanContactViews(){
+
+    private void cleanContactViews() {
         phoneNumberTV.setText("");
         displyNameTV.setText("");
         cityTV.setText("");
         streetTV.setText("");
         postTV.setText("");
         countryTV.setText("");
+        imageView.setImageDrawable(null);
         this.details.setVisibility(View.GONE);
     }
 
@@ -149,6 +154,7 @@ public class MainActivityFragment extends Fragment implements ContactsLoaderList
         progress.setVisibility(View.GONE);
 
     }
+
     private void hideKeyboard() {
         InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
         imm.hideSoftInputFromWindow(searchField.getWindowToken(), 0);

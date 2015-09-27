@@ -43,21 +43,10 @@ public class ContactsUtil implements LoaderManager.LoaderCallbacks<Cursor> {
     private static final String[] PROJECTION =
             {
                     ContactsContract.Data.CONTACT_ID,
-                    ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME,
                     ContactsContract.CommonDataKinds.Phone.NUMBER,
-                    ContactsContract.Data.PHOTO_URI,
-                    Email._ID,
                     Email.ADDRESS,
-                    Email.TYPE,
-                    Email.LABEL,
-                    StructuredPostal.POSTCODE,
-                    StructuredPostal.COUNTRY,
-                    StructuredPostal.CITY,
-                    StructuredPostal.STREET,
-
-                    ContactsContract.Contacts._ID,
-
-
+                    ContactsContract.Contacts.DISPLAY_NAME,
+                    ContactsContract.Contacts.PHOTO_URI,
             };
 
     private static final String[] PROJECTION_MIMETYPE =
@@ -67,6 +56,7 @@ public class ContactsUtil implements LoaderManager.LoaderCallbacks<Cursor> {
                     StructuredPostal.CITY,
                     StructuredPostal.STREET,
                     ContactsContract.Contacts._ID,
+                    ContactsContract.CommonDataKinds.Phone.NUMBER,
             };
 
     private ContactsUtil(Activity context) {
@@ -111,15 +101,18 @@ public class ContactsUtil implements LoaderManager.LoaderCallbacks<Cursor> {
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         Log.d(TAG, "onCreateLoader().. ");
         CursorLoader mLoader = null;
+        Uri lookupUri = Uri.withAppendedPath(ContactsContract.CommonDataKinds.Phone.CONTENT_FILTER_URI,
+                Uri.encode(mSearchString));
         switch (id) {
             case PHONE_NUMBER_QUERY_ID:
                 String[] param = new String[]{mSearchString};
                 mLoader = new CursorLoader(
                         mActivity,
-                        ContactsContract.Data.CONTENT_URI,
+                        lookupUri,
+//                        ContactsContract.Data.CONTENT_URI,
                         PROJECTION,
-                        SELECTION,
-                        param,
+                        null,
+                        null,
                         null
                 );
                 break;
@@ -148,6 +141,7 @@ public class ContactsUtil implements LoaderManager.LoaderCallbacks<Cursor> {
      * @return Contact with thumbnail or null
      */
     private Contact iterateMoreContacts(Cursor c) {
+        Log.d(TAG, "iterateMoreContacts().. "+c.getCount());
         List<Contact> contactList = new ArrayList<>();
         Contact contact;
         if (c.moveToFirst()) {
@@ -172,16 +166,20 @@ public class ContactsUtil implements LoaderManager.LoaderCallbacks<Cursor> {
      */
     private Contact createContact(Cursor cur) {
         String name = cur.getString(cur.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME_PRIMARY));
-        String thumbUriStr = cur.getString(cur.getColumnIndex(ContactsContract.Data.PHOTO_URI));
+        String thumbUriStr = cur.getString(cur.getColumnIndex(ContactsContract.Contacts.PHOTO_URI));
+        String phoneNumber = cur.getString(cur.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
+        String email = cur.getString(cur.getColumnIndex(Email.DATA));
         Uri thumbUri = null;
         if(thumbUriStr != null) {
             thumbUri = Uri.parse(thumbUriStr);
         }
-        String phoneNumber = cur.getString(cur.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
+//
 
         String contactID = cur.getString(cur.getColumnIndex(ContactsContract.Data.CONTACT_ID));
+        Log.d(TAG, "email. "+email);
 
         Contact contact = new Contact();
+        contact.setEmail(email);
         contact.setmContactID(contactID);
         contact.setDisplayName(name);
         contact.setThumbUri(thumbUri);
@@ -203,7 +201,7 @@ public class ContactsUtil implements LoaderManager.LoaderCallbacks<Cursor> {
                         }
                     }
 
-                    if (this.contact.getmContactID() != null) {
+                    if (this.contact != null && this.contact.getmContactID() != null) {
                         mCallback.onResult(contact, ContactsLoaderListener.LOADED_PART.BASE);
                         searchForDetails();
                     } else {
@@ -218,11 +216,11 @@ public class ContactsUtil implements LoaderManager.LoaderCallbacks<Cursor> {
             case MIMETYPE_QUERY_ID:
                 if (cur.getCount() > 0) {
                     if (cur.moveToFirst()) {
-
                         String city = cur.getString(cur.getColumnIndex(StructuredPostal.CITY));
                         String street = cur.getString(cur.getColumnIndex(StructuredPostal.STREET));
                         String country = cur.getString(cur.getColumnIndex(StructuredPostal.COUNTRY));
                         String postcode = cur.getString(cur.getColumnIndex(StructuredPostal.POSTCODE));
+
                         if (contact != null) {
                             contact.setCity(city);
                             contact.setStreet(street);
