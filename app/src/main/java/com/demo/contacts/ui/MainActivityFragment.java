@@ -16,6 +16,7 @@ import android.widget.Toast;
 
 import com.demo.contacts.R;
 import com.demo.contacts.domain.Contact;
+import com.demo.contacts.util.ContactsLoaderListener;
 import com.demo.contacts.util.ContactsUtil;
 import com.squareup.picasso.Picasso;
 
@@ -105,7 +106,7 @@ public class MainActivityFragment extends Fragment implements ContactsLoaderList
      * Contact must not be null and contain phone number
      *
      * @param contact
-     * @return true if contact is not null and contain phone number
+     * @return true if contact is not null and contain ID
      */
     private boolean isContactValid(Contact contact) {
         return contact != null && contact.getmContactID() != null;

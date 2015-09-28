@@ -1,4 +1,4 @@
-package com.demo.contacts.ui;
+package com.demo.contacts.util;
 
 import com.demo.contacts.domain.Contact;
 

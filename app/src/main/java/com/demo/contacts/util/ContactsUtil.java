@@ -13,7 +13,6 @@ import android.provider.ContactsContract.CommonDataKinds.StructuredPostal;
 import android.util.Log;
 
 import com.demo.contacts.domain.Contact;
-import com.demo.contacts.ui.ContactsLoaderListener;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -167,7 +166,6 @@ public class ContactsUtil implements LoaderManager.LoaderCallbacks<Cursor> {
         if(thumbUriStr != null) {
             thumbUri = Uri.parse(thumbUriStr);
         }
-//
 
         String contactID = cur.getString(cur.getColumnIndex(ContactsContract.Data.CONTACT_ID));
         Log.d(TAG, "email. "+email);
